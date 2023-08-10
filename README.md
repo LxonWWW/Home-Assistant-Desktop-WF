@@ -5,9 +5,11 @@ Home Assistant Desktop Client made with .NET (Windows)
 
 ## Installation
 
-Download the latest release [here](https://github.com/LxonWWW/Home-Assistant-Desktop-WF/releases/tag/Stable).
-Create a new folder in your program files folder and unzip it there.
-Create a shortcut for "Home Assistant Desktop.exe" and place it at "shell:startup".
+1. Download the latest release [here](https://github.com/LxonWWW/Home-Assistant-Desktop-WF/releases/tag/Stable).
+2. Create a new folder in your user folder (Example: C:\Users\JohnDoe\ ⮕ C:\Users\JohnDoe\Home_Assistant_Desktop_WF) and unzip it there.
+3. Create a shortcut for "Home Assistant Desktop.exe" and place it at "shell:startup".
+
+***IMPORTANT: This App uses WebView2, in other words Microsoft Edge. Make sure the app is in a place where administrator privileges are NOT required or it may not work.***
 
 Thats it, I hope you have fun!
 
