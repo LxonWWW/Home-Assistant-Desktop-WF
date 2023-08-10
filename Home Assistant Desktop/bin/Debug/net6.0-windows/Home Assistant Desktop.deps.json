@@ -1,0 +1,66 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "Home Assistant Desktop/1.0.0": {
+        "dependencies": {
+          "Microsoft.Web.WebView2": "1.0.1901.177"
+        },
+        "runtime": {
+          "Home Assistant Desktop.dll": {}
+        }
+      },
+      "Microsoft.Web.WebView2/1.0.1901.177": {
+        "runtime": {
+          "lib/netcoreapp3.0/Microsoft.Web.WebView2.Core.dll": {
+            "assemblyVersion": "1.0.1901.177",
+            "fileVersion": "1.0.1901.177"
+          },
+          "lib/netcoreapp3.0/Microsoft.Web.WebView2.WinForms.dll": {
+            "assemblyVersion": "1.0.1901.177",
+            "fileVersion": "1.0.1901.177"
+          },
+          "lib/netcoreapp3.0/Microsoft.Web.WebView2.Wpf.dll": {
+            "assemblyVersion": "1.0.1901.177",
+            "fileVersion": "1.0.1901.177"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win-arm64/native/WebView2Loader.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "1.0.1901.177"
+          },
+          "runtimes/win-x64/native/WebView2Loader.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "1.0.1901.177"
+          },
+          "runtimes/win-x86/native/WebView2Loader.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "1.0.1901.177"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Home Assistant Desktop/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Web.WebView2/1.0.1901.177": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-uvVpS0zoIBlmGzNBqtDNhJLvc4z5raFLFmXsLaAVKkxpRMiehOxUtjwvsZX/1Pv6M/N6xkIt/PnM0NdTHlOQoQ==",
+      "path": "microsoft.web.webview2/1.0.1901.177",
+      "hashPath": "microsoft.web.webview2.1.0.1901.177.nupkg.sha512"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home Assistant Desktop", "Home Assistant Desktop\Home Assistant Desktop.csproj", "{1DF536EC-F0A7-4286-B901-F62B4AF0C08D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1DF536EC-F0A7-4286-B901-F62B4AF0C08D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DF536EC-F0A7-4286-B901-F62B4AF0C08D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DF536EC-F0A7-4286-B901-F62B4AF0C08D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DF536EC-F0A7-4286-B901-F62B4AF0C08D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {787CA17C-943F-4443-BCD3-D99A2B009526}
+	EndGlobalSection
+EndGlobal
