@@ -1,7 +1,7 @@
 # Home Assistant Desktop WF
 Home Assistant Desktop Client made with .NET (Windows)
 
-![Screenshot 1](https://cdn.leondierkes.de/images/Home_Assistant_Desktop_WF.jpg)
+![Screenshot 1](https://cdn.leondierkes.de/images/Home_Assistant_Desktop_WF.png)
 
 ## Installation
 
