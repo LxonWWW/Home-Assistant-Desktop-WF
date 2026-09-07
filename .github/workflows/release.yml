@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "6.0.x"
+
+      - name: Build (Release)
+        run: dotnet build "Home Assistant Desktop/Home Assistant Desktop.csproj" -c Release
+
+      - name: Read version from csproj
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$csproj = Get-Content "Home Assistant Desktop/Home Assistant Desktop.csproj"
+          $version = $csproj.Project.PropertyGroup.Version | Select-Object -First 1
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Zip build output
+        shell: pwsh
+        run: |
+          $zipName = "Home-Assistant-Desktop-v${{ steps.version.outputs.version }}.zip"
+          Compress-Archive -Path "Home Assistant Desktop/bin/Release/net6.0-windows/*" -DestinationPath $zipName
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          files: Home-Assistant-Desktop-v${{ steps.version.outputs.version }}.zip
