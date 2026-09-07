@@ -1,5 +1,8 @@
-﻿using Home_Assistant_Desktop.Properties;
+﻿using Home_Assistant_Desktop.Data;
+using Home_Assistant_Desktop.Factories;
+using Home_Assistant_Desktop.ValueObjects;
 using Microsoft.VisualBasic;
+using Microsoft.Web.WebView2.Core;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -8,10 +11,8 @@ namespace Home_Assistant_Desktop
 {
     public partial class Form1 : Form
     {
-        string currentViewPosition = "bottomRight";
-        Size currentViewSize = new Size(441, 811);
-        string currentStartURL = "http://homeassistant.local:8123";
-        Boolean currentStayOnTop = true;
+        private readonly AppSettingsRepository settingsRepository = new();
+        private AppViewState viewState = AppViewState.CreateDefault();
 
         // START Windows API for Window Resizing while having no borders
 
@@ -59,7 +60,7 @@ namespace Home_Assistant_Desktop
         {
             if (m.WParam != IntPtr.Zero)
             {
-                var nccsp = (NCCALCSIZE_PARAMS)Marshal.PtrToStructure(m.LParam, typeof(NCCALCSIZE_PARAMS));
+                var nccsp = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(m.LParam);
 
                 nccsp.rgrc0.top += 1;
                 nccsp.rgrc0.bottom -= 8;
@@ -70,7 +71,7 @@ namespace Home_Assistant_Desktop
             }
             else
             {
-                var clnRect = (RECT)Marshal.PtrToStructure(m.LParam, typeof(RECT));
+                var clnRect = Marshal.PtrToStructure<RECT>(m.LParam);
 
                 clnRect.top += 0;
                 clnRect.bottom -= 8;
@@ -127,35 +128,35 @@ namespace Home_Assistant_Desktop
 
         private void itemAlignViewTopLeft_Click(object sender, EventArgs e)
         {
-            setViewPosition("topLeft");
+            setViewPosition(ViewPosition.TopLeft);
         }
 
         private void itemAlignViewTopRight_Click(object sender, EventArgs e)
         {
-            setViewPosition("topRight");
+            setViewPosition(ViewPosition.TopRight);
         }
 
         private void itemAlignViewBottomLeft_Click(object sender, EventArgs e)
         {
-            setViewPosition("bottomLeft");
+            setViewPosition(ViewPosition.BottomLeft);
         }
 
         private void itemAlignViewBottomRight_Click(object sender, EventArgs e)
         {
-            setViewPosition("bottomRight");
+            setViewPosition(ViewPosition.BottomRight);
         }
 
         private void itemSetStartURL_Click(object sender, EventArgs e)
         {
-            string startURL = Interaction.InputBox("Enter Start URL:", "Set Start URL", currentStartURL).Trim();
+            string startURL = Interaction.InputBox("Enter Start URL:", "Set Start URL", viewState.StartUrl.ToString()).Trim();
 
-            if (Uri.IsWellFormedUriString(startURL, UriKind.Absolute) && startURL != "")
-            {
-                setStartURL(startURL);
-            }
-            else if (startURL == "")
+            if (startURL == "")
             {
                 return;
+            }
+            else if (Uri.TryCreate(startURL, UriKind.Absolute, out Uri? parsedUrl))
+            {
+                setStartURL(parsedUrl);
             }
             else
             {
@@ -166,7 +167,21 @@ namespace Home_Assistant_Desktop
 
         private void itemStayOnTop_Click(object sender, EventArgs e)
         {
-            setStayOnTop(!currentStayOnTop);
+            setStayOnTop(!viewState.StayOnTop);
+        }
+
+        private void itemRememberLastPage_Click(object sender, EventArgs e)
+        {
+            setRememberLastPage(!viewState.RememberLastPage);
+        }
+
+        private void mainWebView_SourceChanged(object? sender, CoreWebView2SourceChangedEventArgs e)
+        {
+            if (!viewState.RememberLastPage || mainWebView.Source is null)
+                return;
+
+            viewState = viewState with { StartUrl = mainWebView.Source };
+            SaveCurrentSettings();
         }
 
         private void itemRestartApplication_Click(object sender, EventArgs e)
@@ -186,6 +201,12 @@ namespace Home_Assistant_Desktop
             MessageBox.Show("Saved current settings successfully.", "Settings Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+        private void itemAbout_Click(object sender, EventArgs e)
+        {
+            using AboutForm aboutForm = new();
+            aboutForm.ShowDialog();
+        }
+
         private void itemQuit_Click(object sender, EventArgs e)
         {
             Application.Exit();
@@ -197,34 +218,10 @@ namespace Home_Assistant_Desktop
         }
 
 
-        private void setViewPosition(string position)
+        private void setViewPosition(ViewPosition position)
         {
-            switch (position)
-            {
-                case "topLeft":
-                    this.Location = new Point(0, 0);
-                    currentViewPosition = position;
-                    break;
-
-                case "topRight":
-                    this.Location = new Point(Screen.FromHandle(this.Handle).WorkingArea.Width - this.Width, 0);
-                    currentViewPosition = position;
-                    break;
-
-                case "bottomLeft":
-                    this.Location = new Point(0, Screen.FromHandle(this.Handle).WorkingArea.Height - this.Height);
-                    currentViewPosition = position;
-                    break;
-
-                case "bottomRight":
-                    this.Location = new Point(Screen.FromHandle(this.Handle).WorkingArea.Width - this.Width, Screen.FromHandle(this.Handle).WorkingArea.Height - this.Height);
-                    currentViewPosition = position;
-                    break;
-
-                default:
-                    setViewPosition("bottomRight");
-                    break;
-            }
+            this.Location = WindowLocationFactory.Create(position, Screen.FromHandle(this.Handle), this.Size);
+            viewState = viewState with { Position = position };
 
             RenderViewItemsChanges();
         }
@@ -232,20 +229,33 @@ namespace Home_Assistant_Desktop
         private void setStayOnTop(Boolean set)
         {
             this.TopMost = set;
-            currentStayOnTop = set;
+            viewState = viewState with { StayOnTop = set };
 
             RenderViewItemsChanges();
         }
 
-        private void setStartURL(string url)
+        private void setRememberLastPage(Boolean set)
         {
-            currentStartURL = url;
-            mainWebView.Source = new Uri(url);
+            viewState = viewState with { RememberLastPage = set };
+
+            if (set && mainWebView.Source is not null)
+            {
+                viewState = viewState with { StartUrl = mainWebView.Source };
+                SaveCurrentSettings();
+            }
+
+            RenderViewItemsChanges();
+        }
+
+        private void setStartURL(Uri url)
+        {
+            viewState = viewState with { StartUrl = url };
+            mainWebView.Source = url;
         }
 
         private void setViewSize(Size size)
         {
-            currentViewSize = size;
+            viewState = viewState with { WindowSize = size };
             this.Size = size;
         }
 
@@ -266,9 +276,9 @@ namespace Home_Assistant_Desktop
                     this.Opacity = 0;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-
+                // Form may already be disposed during application shutdown.
             }
         }
 
@@ -279,22 +289,27 @@ namespace Home_Assistant_Desktop
             itemAlignViewBottomLeft.Text = "Align View Bottom Left";
             itemAlignViewBottomRight.Text = "Align View Bottom Right";
 
-            if (currentViewPosition == "topLeft")
+            if (viewState.Position == ViewPosition.TopLeft)
                 itemAlignViewTopLeft.Text = "✓ Align View Top Left";
 
-            if (currentViewPosition == "topRight")
+            if (viewState.Position == ViewPosition.TopRight)
                 itemAlignViewTopRight.Text = "✓ Align View Top Right";
 
-            if (currentViewPosition == "bottomLeft")
+            if (viewState.Position == ViewPosition.BottomLeft)
                 itemAlignViewBottomLeft.Text = "✓ Align View Bottom Left";
 
-            if (currentViewPosition == "bottomRight")
+            if (viewState.Position == ViewPosition.BottomRight)
                 itemAlignViewBottomRight.Text = "✓ Align View Bottom Right";
 
             itemStayOnTop.Text = "Stay on Top";
 
-            if (currentStayOnTop == true)
+            if (viewState.StayOnTop == true)
                 itemStayOnTop.Text = "✓ Stay on Top";
+
+            itemRememberLastPage.Text = "Remember Last Page";
+
+            if (viewState.RememberLastPage == true)
+                itemRememberLastPage.Text = "✓ Remember Last Page";
 
             showView(true);
         }
@@ -309,39 +324,25 @@ namespace Home_Assistant_Desktop
 
         private void SaveCurrentSettings()
         {
-            Settings.Default.savedStartURL = currentStartURL;
-            Settings.Default.savedViewPosition = currentViewPosition;
-            Settings.Default.savedViewSize = currentViewSize;
-            Settings.Default.savedStayOnTop = currentStayOnTop;
-
-            Properties.Settings.Default.Save();
+            settingsRepository.Save(viewState);
         }
 
         private void LoadCurrentSettings()
         {
-            if (Settings.Default.savedStartURL != "")
-            {
-                setStartURL(Settings.Default.savedStartURL);
-            }
+            viewState = settingsRepository.Load();
 
-            if (Settings.Default.savedViewSize != new Size(0, 0))
-            {
-                setViewSize(Settings.Default.savedViewSize);
-            }
-
-            if (Settings.Default.savedViewPosition != "")
-            {
-                setViewPosition(Settings.Default.savedViewPosition);
-            }
-
-            setStayOnTop(Settings.Default.savedStayOnTop);
+            setStartURL(viewState.StartUrl);
+            setViewSize(viewState.WindowSize);
+            setViewPosition(viewState.Position);
+            setStayOnTop(viewState.StayOnTop);
+            setRememberLastPage(viewState.RememberLastPage);
 
             resizeWebView();
         }
 
         private void ResetSettings()
         {
-            Settings.Default.Reset();
+            settingsRepository.Reset();
             MessageBox.Show("Application has been reset.", "Application Reset", MessageBoxButtons.OK, MessageBoxIcon.Information);
             Application.Restart();
         }

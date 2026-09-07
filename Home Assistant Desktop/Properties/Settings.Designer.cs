@@ -70,5 +70,17 @@ namespace Home_Assistant_Desktop.Properties {
                 this["savedViewSize"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool savedRememberLastPage {
+            get {
+                return ((bool)(this["savedRememberLastPage"]));
+            }
+            set {
+                this["savedRememberLastPage"] = value;
+            }
+        }
     }
 }

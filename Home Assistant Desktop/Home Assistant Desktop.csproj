@@ -8,10 +8,13 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
+    <Version>1.3.6</Version>
+    <Authors>Leon Dierkes</Authors>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="favicon.ico" />
+    <EmbeddedResource Include="home-assistant-icon.png" />
   </ItemGroup>
 
   <ItemGroup>

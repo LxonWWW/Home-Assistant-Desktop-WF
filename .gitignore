@@ -1,0 +1,15 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# WebView2 runtime storage (cache, cookies, local storage) created next to the exe
+*.WebView2/
+EBWebView/
+
+# User-scoped application settings (per-machine saved window state)
+*.config.user

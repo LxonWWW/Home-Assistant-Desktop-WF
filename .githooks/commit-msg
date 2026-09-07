@@ -1,0 +1,9 @@
+#!/bin/sh
+# Strips AI co-authorship trailers (e.g. Claude) from commit messages.
+msg_file="$1"
+
+grep -v -E '^(Co-Authored-By:.*[Cc]laude|Claude-Session:)' "$msg_file" > "$msg_file.tmp"
+
+# Drop a now-orphaned trailing blank line left where the trailer used to be.
+sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$msg_file.tmp" > "$msg_file"
+rm -f "$msg_file.tmp"

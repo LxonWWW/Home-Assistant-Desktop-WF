@@ -42,11 +42,13 @@
             toolStripSeparator4 = new ToolStripSeparator();
             itemSetStartURL = new ToolStripMenuItem();
             itemStayOnTop = new ToolStripMenuItem();
+            itemRememberLastPage = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
             itemRestartApplication = new ToolStripMenuItem();
             itemResetApplication = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             itemSaveCurrentSettings = new ToolStripMenuItem();
+            itemAbout = new ToolStripMenuItem();
             toolStripSeparator5 = new ToolStripSeparator();
             itemQuit = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)mainWebView).BeginInit();
@@ -65,7 +67,8 @@
             mainWebView.Source = new Uri("http://homeassistant.local:8123", UriKind.Absolute);
             mainWebView.TabIndex = 0;
             mainWebView.ZoomFactor = 1D;
-            // 
+            mainWebView.SourceChanged += mainWebView_SourceChanged;
+            //
             // notifyIcon1
             // 
             notifyIcon1.BalloonTipText = "Click here to Open";
@@ -80,7 +83,7 @@
             // 
             contextMenuStrip1.BackColor = Color.FromArgb(17, 17, 17);
             contextMenuStrip1.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { itemOpenInBrowser, toolStripSeparator1, itemAlignViewTopLeft, itemAlignViewTopRight, itemAlignViewBottomLeft, itemAlignViewBottomRight, toolStripSeparator4, itemSetStartURL, itemStayOnTop, toolStripSeparator2, itemRestartApplication, itemResetApplication, toolStripSeparator3, itemSaveCurrentSettings, toolStripSeparator5, itemQuit });
+            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { itemOpenInBrowser, toolStripSeparator1, itemAlignViewTopLeft, itemAlignViewTopRight, itemAlignViewBottomLeft, itemAlignViewBottomRight, toolStripSeparator4, itemSetStartURL, itemStayOnTop, itemRememberLastPage, toolStripSeparator2, itemRestartApplication, itemResetApplication, toolStripSeparator3, itemSaveCurrentSettings, toolStripSeparator5, itemAbout, itemQuit });
             contextMenuStrip1.Name = "contextMenuStrip1";
             contextMenuStrip1.RenderMode = ToolStripRenderMode.System;
             contextMenuStrip1.Size = new Size(205, 298);
@@ -150,7 +153,15 @@
             itemStayOnTop.Size = new Size(204, 22);
             itemStayOnTop.Text = "Stay on Top";
             itemStayOnTop.Click += itemStayOnTop_Click;
-            // 
+            //
+            // itemRememberLastPage
+            //
+            itemRememberLastPage.ForeColor = Color.WhiteSmoke;
+            itemRememberLastPage.Name = "itemRememberLastPage";
+            itemRememberLastPage.Size = new Size(204, 22);
+            itemRememberLastPage.Text = "Remember Last Page";
+            itemRememberLastPage.Click += itemRememberLastPage_Click;
+            //
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
@@ -184,7 +195,15 @@
             itemSaveCurrentSettings.Size = new Size(204, 22);
             itemSaveCurrentSettings.Text = "Save Current Settings";
             itemSaveCurrentSettings.Click += itemSaveCurrentSettings_Click;
-            // 
+            //
+            // itemAbout
+            //
+            itemAbout.ForeColor = Color.WhiteSmoke;
+            itemAbout.Name = "itemAbout";
+            itemAbout.Size = new Size(204, 22);
+            itemAbout.Text = "About";
+            itemAbout.Click += itemAbout_Click;
+            //
             // toolStripSeparator5
             // 
             toolStripSeparator5.Name = "toolStripSeparator5";
@@ -230,7 +249,7 @@
         private ToolStripMenuItem itemOpenInBrowser;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem itemStayOnTop;
-        private ToolStripMenuItem itemStartAtLogin;
+        private ToolStripMenuItem itemRememberLastPage;
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripMenuItem itemRestartApplication;
         private ToolStripMenuItem itemResetApplication;
@@ -242,8 +261,8 @@
         private ToolStripMenuItem itemAlignViewBottomRight;
         private ToolStripSeparator toolStripSeparator4;
         private ToolStripMenuItem itemSaveCurrentSettings;
+        private ToolStripMenuItem itemAbout;
         private ToolStripSeparator toolStripSeparator5;
         private ToolStripMenuItem itemSetStartURL;
-        private Button button1;
     }
 }
