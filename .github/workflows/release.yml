@@ -35,9 +35,22 @@ jobs:
           $zipName = "Home-Assistant-Desktop-v${{ steps.version.outputs.version }}.zip"
           Compress-Archive -Path "Home Assistant Desktop/bin/Release/net6.0-windows/*" -DestinationPath $zipName
 
+      - name: Get merged PR description
+        id: pr
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          body=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" --jq '.[0].body // ""')
+          echo "body<<EOF_RELEASE_BODY" >> "$GITHUB_OUTPUT"
+          echo "$body" >> "$GITHUB_OUTPUT"
+          echo "EOF_RELEASE_BODY" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
+          body: ${{ steps.pr.outputs.body }}
+          generate_release_notes: ${{ steps.pr.outputs.body == '' }}
           files: Home-Assistant-Desktop-v${{ steps.version.outputs.version }}.zip
