@@ -27,8 +27,12 @@ Thats it, I hope you have fun!
     
 2. ### Changing Settings:
    - Right click the tray icon to change or save settings. To change the app size drag the app borders.
+   - Enable "Remember Last Page" to have the app reopen on the last page you navigated to instead of the configured start URL.
 
    **Don't forget to save your changed settings when you're finished!**
+
+3. ### About:
+    - Right click the tray icon and select "About" to see the app version, a link to this GitHub repository, and a credit to the author.
 
 4. ### Upgrading:
     - Delete the contents of the folder you have created in step 1. (**Installation**).
