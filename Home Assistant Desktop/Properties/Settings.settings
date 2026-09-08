@@ -17,5 +17,8 @@
     <Setting Name="savedRememberLastPage" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="savedTrayInteractionMode" Type="System.String" Scope="User">
+      <Value Profile="(Default)">clickToOpen</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
