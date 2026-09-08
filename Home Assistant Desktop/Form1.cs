@@ -100,6 +100,7 @@ namespace Home_Assistant_Desktop
 
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.Text = "";
+            this.DoubleBuffered = true;
 
             showView(false);
         }
