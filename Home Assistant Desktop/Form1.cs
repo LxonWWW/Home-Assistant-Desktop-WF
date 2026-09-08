@@ -93,6 +93,21 @@ namespace Home_Assistant_Desktop
         public Form1()
         {
             InitializeComponent();
+
+            Microsoft.Win32.SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
+        }
+
+        private void SystemEvents_DisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            // Re-apply the saved alignment: Windows can snap the window to a
+            // fallback position when a monitor briefly disappears (e.g. during
+            // sleep/resume with an external display reconnecting).
+            setViewPosition(viewState.Position);
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
         }
 
         private void Form1_Load(object sender, EventArgs e)

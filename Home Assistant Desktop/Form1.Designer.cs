@@ -261,6 +261,7 @@
             Deactivate += Form1_Deactivate;
             Load += Form1_Load;
             SizeChanged += Form1_SizeChanged;
+            FormClosed += Form1_FormClosed;
             ((System.ComponentModel.ISupportInitialize)mainWebView).EndInit();
             contextMenuStrip1.ResumeLayout(false);
             ResumeLayout(false);
