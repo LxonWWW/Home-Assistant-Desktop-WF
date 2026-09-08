@@ -22,8 +22,9 @@ namespace Home_Assistant_Desktop.Data
                 : AppViewState.DefaultWindowSize;
 
             ViewPosition position = ViewPositionConvert.FromSettingsValue(settings.savedViewPosition);
+            TrayInteractionMode interactionMode = TrayInteractionModeConvert.FromSettingsValue(settings.savedTrayInteractionMode);
 
-            return new AppViewState(startUrl, position, windowSize, settings.savedStayOnTop, settings.savedRememberLastPage);
+            return new AppViewState(startUrl, position, windowSize, settings.savedStayOnTop, settings.savedRememberLastPage, interactionMode);
         }
 
         public void Save(AppViewState state)
@@ -35,6 +36,7 @@ namespace Home_Assistant_Desktop.Data
             settings.savedViewSize = state.WindowSize;
             settings.savedStayOnTop = state.StayOnTop;
             settings.savedRememberLastPage = state.RememberLastPage;
+            settings.savedTrayInteractionMode = state.InteractionMode.ToSettingsValue();
 
             settings.Save();
         }

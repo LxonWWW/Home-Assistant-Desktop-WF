@@ -82,5 +82,17 @@ namespace Home_Assistant_Desktop.Properties {
                 this["savedRememberLastPage"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("clickToOpen")]
+        public string savedTrayInteractionMode {
+            get {
+                return ((string)(this["savedTrayInteractionMode"]));
+            }
+            set {
+                this["savedTrayInteractionMode"] = value;
+            }
+        }
     }
 }

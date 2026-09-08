@@ -14,6 +14,10 @@ namespace Home_Assistant_Desktop
         private readonly AppSettingsRepository settingsRepository = new();
         private AppViewState viewState = AppViewState.CreateDefault();
 
+        private bool hoverWatchLatched = false;
+        private DateTime lastIconHoverAt = DateTime.MinValue;
+        private static readonly TimeSpan IconHoverGracePeriod = TimeSpan.FromMilliseconds(500);
+
         // START Windows API for Window Resizing while having no borders
 
         public const uint WM_NCPAINT = 0x85;
@@ -89,6 +93,21 @@ namespace Home_Assistant_Desktop
         public Form1()
         {
             InitializeComponent();
+
+            Microsoft.Win32.SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
+        }
+
+        private void SystemEvents_DisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            // Re-apply the saved alignment: Windows can snap the window to a
+            // fallback position when a monitor briefly disappears (e.g. during
+            // sleep/resume with an external display reconnecting).
+            setViewPosition(viewState.Position);
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -97,6 +116,7 @@ namespace Home_Assistant_Desktop
 
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.Text = "";
+            this.DoubleBuffered = true;
 
             showView(false);
         }
@@ -109,14 +129,44 @@ namespace Home_Assistant_Desktop
 
         private void Form1_Deactivate(object sender, EventArgs e)
         {
-            showView(false);
+            if (viewState.InteractionMode != TrayInteractionMode.OpenOnToggle)
+                showView(false);
         }
 
         private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
         {
-            if (e.Button != MouseButtons.Right)
+            if (e.Button == MouseButtons.Right)
+                return;
+
+            if (viewState.InteractionMode == TrayInteractionMode.OpenOnHover)
+            {
+                showView(false, true);
+            }
+            else
+            {
+                showView(!this.Visible, true);
+            }
+        }
+
+        private void notifyIcon1_MouseMove(object sender, MouseEventArgs e)
+        {
+            lastIconHoverAt = DateTime.UtcNow;
+
+            if (viewState.InteractionMode == TrayInteractionMode.OpenOnHover && !contextMenuStrip1.Visible && !this.Visible)
             {
                 showView(true);
+            }
+        }
+
+        private void hoverWatchTimer_Tick(object sender, EventArgs e)
+        {
+            bool cursorInForm = this.Bounds.Contains(Cursor.Position);
+            bool recentlyOverIcon = DateTime.UtcNow - lastIconHoverAt < IconHoverGracePeriod;
+
+            if (!cursorInForm && !recentlyOverIcon)
+            {
+                hoverWatchTimer.Enabled = false;
+                showView(false);
             }
         }
 
@@ -173,6 +223,20 @@ namespace Home_Assistant_Desktop
         private void itemRememberLastPage_Click(object sender, EventArgs e)
         {
             setRememberLastPage(!viewState.RememberLastPage);
+        }
+
+        private void itemOpenOnHover_Click(object sender, EventArgs e)
+        {
+            setInteractionMode(viewState.InteractionMode == TrayInteractionMode.OpenOnHover
+                ? TrayInteractionMode.ClickToOpen
+                : TrayInteractionMode.OpenOnHover);
+        }
+
+        private void itemOpenOnToggle_Click(object sender, EventArgs e)
+        {
+            setInteractionMode(viewState.InteractionMode == TrayInteractionMode.OpenOnToggle
+                ? TrayInteractionMode.ClickToOpen
+                : TrayInteractionMode.OpenOnToggle);
         }
 
         private void mainWebView_SourceChanged(object? sender, CoreWebView2SourceChangedEventArgs e)
@@ -247,6 +311,13 @@ namespace Home_Assistant_Desktop
             RenderViewItemsChanges();
         }
 
+        private void setInteractionMode(TrayInteractionMode mode)
+        {
+            viewState = viewState with { InteractionMode = mode };
+
+            RenderViewItemsChanges();
+        }
+
         private void setStartURL(Uri url)
         {
             viewState = viewState with { StartUrl = url };
@@ -259,11 +330,18 @@ namespace Home_Assistant_Desktop
             this.Size = size;
         }
 
-        private void showView(Boolean set)
+        private void showView(Boolean set, Boolean openedExplicitly = false)
         {
             try
             {
                 this.Visible = set;
+
+                if (!hoverWatchLatched)
+                    hoverWatchLatched = openedExplicitly;
+
+                bool watchForHoverExit = viewState.InteractionMode == TrayInteractionMode.OpenOnHover && set && !hoverWatchLatched;
+
+                hoverWatchTimer.Enabled = watchForHoverExit;
 
                 if (set == true)
                 {
@@ -274,6 +352,7 @@ namespace Home_Assistant_Desktop
                 else
                 {
                     this.Opacity = 0;
+                    hoverWatchLatched = false;
                 }
             }
             catch (Exception)
@@ -311,7 +390,17 @@ namespace Home_Assistant_Desktop
             if (viewState.RememberLastPage == true)
                 itemRememberLastPage.Text = "✓ Remember Last Page";
 
-            showView(true);
+            itemOpenOnHover.Text = "Open on Hover";
+
+            if (viewState.InteractionMode == TrayInteractionMode.OpenOnHover)
+                itemOpenOnHover.Text = "✓ Open on Hover";
+
+            itemOpenOnToggle.Text = "Open on Toggle";
+
+            if (viewState.InteractionMode == TrayInteractionMode.OpenOnToggle)
+                itemOpenOnToggle.Text = "✓ Open on Toggle";
+
+            showView(true, true);
         }
 
         private void openBrowser()
@@ -336,6 +425,7 @@ namespace Home_Assistant_Desktop
             setViewPosition(viewState.Position);
             setStayOnTop(viewState.StayOnTop);
             setRememberLastPage(viewState.RememberLastPage);
+            setInteractionMode(viewState.InteractionMode);
 
             resizeWebView();
         }

@@ -42,8 +42,11 @@
             toolStripSeparator4 = new ToolStripSeparator();
             itemSetStartURL = new ToolStripMenuItem();
             itemStayOnTop = new ToolStripMenuItem();
+            itemOpenOnHover = new ToolStripMenuItem();
+            itemOpenOnToggle = new ToolStripMenuItem();
             itemRememberLastPage = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
+            hoverWatchTimer = new System.Windows.Forms.Timer(components);
             itemRestartApplication = new ToolStripMenuItem();
             itemResetApplication = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
@@ -78,12 +81,13 @@
             notifyIcon1.Text = "Home Assistant Desktop";
             notifyIcon1.Visible = true;
             notifyIcon1.MouseClick += notifyIcon1_MouseClick;
+            notifyIcon1.MouseMove += notifyIcon1_MouseMove;
             // 
             // contextMenuStrip1
             // 
             contextMenuStrip1.BackColor = Color.FromArgb(17, 17, 17);
             contextMenuStrip1.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { itemOpenInBrowser, toolStripSeparator1, itemAlignViewTopLeft, itemAlignViewTopRight, itemAlignViewBottomLeft, itemAlignViewBottomRight, toolStripSeparator4, itemSetStartURL, itemStayOnTop, itemRememberLastPage, toolStripSeparator2, itemRestartApplication, itemResetApplication, toolStripSeparator3, itemSaveCurrentSettings, toolStripSeparator5, itemAbout, itemQuit });
+            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { itemOpenInBrowser, toolStripSeparator1, itemAlignViewTopLeft, itemAlignViewTopRight, itemAlignViewBottomLeft, itemAlignViewBottomRight, toolStripSeparator4, itemSetStartURL, itemStayOnTop, itemOpenOnHover, itemOpenOnToggle, itemRememberLastPage, toolStripSeparator2, itemRestartApplication, itemResetApplication, toolStripSeparator3, itemSaveCurrentSettings, toolStripSeparator5, itemAbout, itemQuit });
             contextMenuStrip1.Name = "contextMenuStrip1";
             contextMenuStrip1.RenderMode = ToolStripRenderMode.System;
             contextMenuStrip1.Size = new Size(205, 298);
@@ -154,6 +158,22 @@
             itemStayOnTop.Text = "Stay on Top";
             itemStayOnTop.Click += itemStayOnTop_Click;
             //
+            // itemOpenOnHover
+            //
+            itemOpenOnHover.ForeColor = Color.WhiteSmoke;
+            itemOpenOnHover.Name = "itemOpenOnHover";
+            itemOpenOnHover.Size = new Size(204, 22);
+            itemOpenOnHover.Text = "Open on Hover";
+            itemOpenOnHover.Click += itemOpenOnHover_Click;
+            //
+            // itemOpenOnToggle
+            //
+            itemOpenOnToggle.ForeColor = Color.WhiteSmoke;
+            itemOpenOnToggle.Name = "itemOpenOnToggle";
+            itemOpenOnToggle.Size = new Size(204, 22);
+            itemOpenOnToggle.Text = "Open on Toggle";
+            itemOpenOnToggle.Click += itemOpenOnToggle_Click;
+            //
             // itemRememberLastPage
             //
             itemRememberLastPage.ForeColor = Color.WhiteSmoke;
@@ -166,7 +186,11 @@
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
             toolStripSeparator2.Size = new Size(201, 6);
-            // 
+            //
+            // hoverWatchTimer
+            //
+            hoverWatchTimer.Tick += hoverWatchTimer_Tick;
+            //
             // itemRestartApplication
             // 
             itemRestartApplication.ForeColor = Color.WhiteSmoke;
@@ -237,6 +261,7 @@
             Deactivate += Form1_Deactivate;
             Load += Form1_Load;
             SizeChanged += Form1_SizeChanged;
+            FormClosed += Form1_FormClosed;
             ((System.ComponentModel.ISupportInitialize)mainWebView).EndInit();
             contextMenuStrip1.ResumeLayout(false);
             ResumeLayout(false);
@@ -249,7 +274,10 @@
         private ToolStripMenuItem itemOpenInBrowser;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem itemStayOnTop;
+        private ToolStripMenuItem itemOpenOnHover;
+        private ToolStripMenuItem itemOpenOnToggle;
         private ToolStripMenuItem itemRememberLastPage;
+        private System.Windows.Forms.Timer hoverWatchTimer;
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripMenuItem itemRestartApplication;
         private ToolStripMenuItem itemResetApplication;
