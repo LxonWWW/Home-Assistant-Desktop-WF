@@ -20,5 +20,14 @@
     <Setting Name="savedTrayInteractionMode" Type="System.String" Scope="User">
       <Value Profile="(Default)">clickToOpen</Value>
     </Setting>
+    <Setting Name="savedNextUpdateCheckAt" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="savedLastNotifiedUpdateVersion" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="savedUpdateChecksEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

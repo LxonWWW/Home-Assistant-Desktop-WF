@@ -24,7 +24,7 @@ namespace Home_Assistant_Desktop.Data
             ViewPosition position = ViewPositionConvert.FromSettingsValue(settings.savedViewPosition);
             TrayInteractionMode interactionMode = TrayInteractionModeConvert.FromSettingsValue(settings.savedTrayInteractionMode);
 
-            return new AppViewState(startUrl, position, windowSize, settings.savedStayOnTop, settings.savedRememberLastPage, interactionMode);
+            return new AppViewState(startUrl, position, windowSize, settings.savedStayOnTop, settings.savedRememberLastPage, interactionMode, settings.savedUpdateChecksEnabled);
         }
 
         public void Save(AppViewState state)
@@ -37,10 +37,37 @@ namespace Home_Assistant_Desktop.Data
             settings.savedStayOnTop = state.StayOnTop;
             settings.savedRememberLastPage = state.RememberLastPage;
             settings.savedTrayInteractionMode = state.InteractionMode.ToSettingsValue();
+            settings.savedUpdateChecksEnabled = state.UpdateChecksEnabled;
 
             settings.Save();
         }
 
         public void Reset() => Settings.Default.Reset();
+
+        public DateTime? GetNextUpdateCheckAt()
+        {
+            return DateTime.TryParse(
+                Settings.Default.savedNextUpdateCheckAt,
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.RoundtripKind,
+                out DateTime parsed) ? parsed : null;
+        }
+
+        public void SetNextUpdateCheckAt(DateTime timestamp)
+        {
+            Settings.Default.savedNextUpdateCheckAt = timestamp.ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+            Settings.Default.Save();
+        }
+
+        public Version? GetLastNotifiedUpdateVersion()
+        {
+            return Version.TryParse(Settings.Default.savedLastNotifiedUpdateVersion, out Version? version) ? version : null;
+        }
+
+        public void SetLastNotifiedUpdateVersion(Version version)
+        {
+            Settings.Default.savedLastNotifiedUpdateVersion = version.ToString();
+            Settings.Default.Save();
+        }
     }
 }

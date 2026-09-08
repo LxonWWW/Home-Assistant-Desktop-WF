@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Home_Assistant_Desktop
@@ -24,24 +23,11 @@ namespace Home_Assistant_Desktop
             int cornerPreference = DWMWCP_ROUND;
             DwmSetWindowAttribute(Handle, DWMWA_WINDOW_CORNER_PREFERENCE, ref cornerPreference, sizeof(int));
 
-            pictureLogo.Image = LoadLogo();
+            pictureLogo.Image = AppLogo.Load();
 
-            Version? version = Assembly.GetExecutingAssembly().GetName().Version;
-            labelVersion.Text = version is null ? "Version unknown" : $"Version {version.Major}.{version.Minor}.{version.Build}";
+            labelVersion.Text = $"Version {AppVersion.Current}";
 
             CenterOnPrimaryScreen();
-        }
-
-        private static Image? LoadLogo()
-        {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            using Stream? logoStream = assembly.GetManifestResourceStream("Home_Assistant_Desktop.home-assistant-icon.png");
-
-            if (logoStream is not null)
-                return Image.FromStream(logoStream);
-
-            using Icon? appIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            return appIcon?.ToBitmap();
         }
 
         private void CenterOnPrimaryScreen()
