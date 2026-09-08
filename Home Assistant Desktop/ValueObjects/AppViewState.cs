@@ -9,7 +9,8 @@ namespace Home_Assistant_Desktop.ValueObjects
         Size WindowSize,
         bool StayOnTop,
         bool RememberLastPage,
-        TrayInteractionMode InteractionMode)
+        TrayInteractionMode InteractionMode,
+        bool UpdateChecksEnabled)
     {
         public static readonly Uri DefaultStartUrl = new("http://homeassistant.local:8123");
         public static readonly Size DefaultWindowSize = new(441, 811);
@@ -17,8 +18,9 @@ namespace Home_Assistant_Desktop.ValueObjects
         public const bool DefaultStayOnTop = false;
         public const bool DefaultRememberLastPage = false;
         public const TrayInteractionMode DefaultInteractionMode = TrayInteractionMode.ClickToOpen;
+        public const bool DefaultUpdateChecksEnabled = true;
 
         public static AppViewState CreateDefault() =>
-            new(DefaultStartUrl, DefaultPosition, DefaultWindowSize, DefaultStayOnTop, DefaultRememberLastPage, DefaultInteractionMode);
+            new(DefaultStartUrl, DefaultPosition, DefaultWindowSize, DefaultStayOnTop, DefaultRememberLastPage, DefaultInteractionMode, DefaultUpdateChecksEnabled);
     }
 }

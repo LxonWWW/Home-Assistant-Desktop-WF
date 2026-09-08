@@ -1,5 +1,6 @@
 ﻿using Home_Assistant_Desktop.Data;
 using Home_Assistant_Desktop.Factories;
+using Home_Assistant_Desktop.Services;
 using Home_Assistant_Desktop.ValueObjects;
 using Microsoft.VisualBasic;
 using Microsoft.Web.WebView2.Core;
@@ -17,6 +18,15 @@ namespace Home_Assistant_Desktop
         private bool hoverWatchLatched = false;
         private Point iconHoverOrigin;
         private const int IconHoverZoneMargin = 24;
+
+        private readonly GitHubUpdateChecker updateChecker = new();
+        private static readonly Random random = new();
+        private static readonly TimeSpan UpdateCheckBaseInterval = TimeSpan.FromMinutes(60);
+        private static readonly TimeSpan UpdateCheckJitter = TimeSpan.FromMinutes(15);
+        private static readonly TimeSpan InitialUpdateCheckDelay = TimeSpan.FromMinutes(2);
+        private const string ReleasesUrl = "https://github.com/LxonWWW/Home-Assistant-Desktop-WF/releases/latest";
+        private Version? pendingUpdateVersion;
+        private Task<UpdateCheckResult>? inFlightUpdateCheck;
 
         // START Windows API for Window Resizing while having no borders
 
@@ -99,10 +109,20 @@ namespace Home_Assistant_Desktop
 
         private void SystemEvents_DisplaySettingsChanged(object? sender, EventArgs e)
         {
-            // Re-apply the saved alignment: Windows can snap the window to a
+            // SystemEvents raises this on its own worker thread if the subscribing
+            // thread (here, before Application.Run starts pumping messages) wasn't
+            // already pumping - marshal back before touching any control.
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(() => SystemEvents_DisplaySettingsChanged(sender, e)));
+                return;
+            }
+
+            // Re-apply the saved alignment directly: Windows can snap the window to a
             // fallback position when a monitor briefly disappears (e.g. during
-            // sleep/resume with an external display reconnecting).
-            setViewPosition(viewState.Position);
+            // sleep/resume with an external display reconnecting). Reposition only -
+            // setViewPosition would also force the hidden tray popup to show/focus.
+            this.Location = WindowLocationFactory.Create(viewState.Position, Screen.FromHandle(this.Handle), this.Size);
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -117,6 +137,8 @@ namespace Home_Assistant_Desktop
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.Text = "";
             this.DoubleBuffered = true;
+
+            ScheduleInitialUpdateCheck();
 
             showView(false);
         }
@@ -140,7 +162,7 @@ namespace Home_Assistant_Desktop
 
             if (viewState.InteractionMode == TrayInteractionMode.OpenOnHover)
             {
-                showView(false, true);
+                showView(false);
             }
             else
             {
@@ -270,6 +292,53 @@ namespace Home_Assistant_Desktop
             aboutForm.ShowDialog();
         }
 
+        private async void itemCheckForUpdates_Click(object sender, EventArgs e)
+        {
+            Version currentVersion = AppVersion.Current;
+            Task<UpdateCheckResult> checkTask = StartOrJoinUpdateCheck();
+
+            using UpdateAvailableForm dialog = new(checkTask, currentVersion, viewState.UpdateChecksEnabled);
+            dialog.ShowDialog();
+
+            UpdateCheckResult result = await checkTask;
+            ApplyDialogAction(dialog.SelectedAction, result.LatestVersion);
+        }
+
+        private void notifyIcon1_BalloonTipClicked(object sender, EventArgs e)
+        {
+            if (pendingUpdateVersion is null)
+                return;
+
+            using UpdateAvailableForm dialog = new(pendingUpdateVersion, AppVersion.Current, viewState.UpdateChecksEnabled);
+            dialog.ShowDialog();
+
+            ApplyDialogAction(dialog.SelectedAction, pendingUpdateVersion);
+        }
+
+        private async void updateCheckTimer_Tick(object sender, EventArgs e)
+        {
+            updateCheckTimer.Stop();
+
+            if (!viewState.UpdateChecksEnabled)
+                return;
+
+            UpdateCheckResult result = await StartOrJoinUpdateCheck();
+            Version currentVersion = AppVersion.Current;
+
+            if (result.LatestVersion is null || result.LatestVersion <= currentVersion)
+                return;
+
+            Version? lastNotified = settingsRepository.GetLastNotifiedUpdateVersion();
+            if (lastNotified is not null && lastNotified >= result.LatestVersion)
+                return;
+
+            pendingUpdateVersion = result.LatestVersion;
+            notifyIcon1.BalloonTipTitle = "Update Available";
+            notifyIcon1.BalloonTipText = $"Version {result.LatestVersion} is available. Click to view.";
+            notifyIcon1.BalloonTipIcon = ToolTipIcon.Info;
+            notifyIcon1.ShowBalloonTip(10000);
+        }
+
         private void itemQuit_Click(object sender, EventArgs e)
         {
             Application.Exit();
@@ -315,6 +384,104 @@ namespace Home_Assistant_Desktop
             viewState = viewState with { InteractionMode = mode };
 
             RenderViewItemsChanges();
+        }
+
+        private void setUpdateChecksEnabled(bool enabled)
+        {
+            viewState = viewState with { UpdateChecksEnabled = enabled };
+            SaveCurrentSettings();
+        }
+
+        private static void OpenReleasesPage()
+        {
+            Process browser = new Process();
+            browser.StartInfo.UseShellExecute = true;
+            browser.StartInfo.FileName = ReleasesUrl;
+            browser.Start();
+        }
+
+        private static TimeSpan GetJitteredUpdateCheckInterval()
+        {
+            double offsetMinutes = (random.NextDouble() * 2 - 1) * UpdateCheckJitter.TotalMinutes;
+            return UpdateCheckBaseInterval + TimeSpan.FromMinutes(offsetMinutes);
+        }
+
+        private void ScheduleTimerFor(DateTime nextCheckAtUtc)
+        {
+            TimeSpan delay = nextCheckAtUtc - DateTime.UtcNow;
+            if (delay < TimeSpan.Zero)
+                delay = TimeSpan.FromSeconds(5);
+
+            updateCheckTimer.Stop();
+            updateCheckTimer.Interval = (int)Math.Min(delay.TotalMilliseconds, int.MaxValue - 1);
+            updateCheckTimer.Start();
+        }
+
+        private void ScheduleInitialUpdateCheck()
+        {
+            if (!viewState.UpdateChecksEnabled)
+                return;
+
+            DateTime dueAt = settingsRepository.GetNextUpdateCheckAt() ?? DateTime.UtcNow;
+
+            if (dueAt <= DateTime.UtcNow)
+                dueAt = DateTime.UtcNow + InitialUpdateCheckDelay;
+
+            ScheduleTimerFor(dueAt);
+        }
+
+        private Task<UpdateCheckResult> StartOrJoinUpdateCheck()
+        {
+            inFlightUpdateCheck ??= RunUpdateCheckAsync();
+            return inFlightUpdateCheck;
+        }
+
+        private async Task<UpdateCheckResult> RunUpdateCheckAsync()
+        {
+            try
+            {
+                UpdateCheckResult result = await updateChecker.CheckAsync();
+                ApplyCheckSchedule(result);
+                return result;
+            }
+            finally
+            {
+                inFlightUpdateCheck = null;
+            }
+        }
+
+        private void ApplyCheckSchedule(UpdateCheckResult result)
+        {
+            if (!viewState.UpdateChecksEnabled)
+                return;
+
+            DateTime nextCheckAt = result.RetryNotBefore?.UtcDateTime ?? DateTime.UtcNow + GetJitteredUpdateCheckInterval();
+            settingsRepository.SetNextUpdateCheckAt(nextCheckAt);
+            ScheduleTimerFor(nextCheckAt);
+        }
+
+        private void ApplyDialogAction(UpdateAvailableAction action, Version? latestVersion)
+        {
+            switch (action)
+            {
+                case UpdateAvailableAction.Download:
+                    OpenReleasesPage();
+                    break;
+
+                case UpdateAvailableAction.SkipThisRelease:
+                    if (latestVersion is not null)
+                        settingsRepository.SetLastNotifiedUpdateVersion(latestVersion);
+                    break;
+
+                case UpdateAvailableAction.DontNotifyAgain:
+                    setUpdateChecksEnabled(false);
+                    break;
+
+                case UpdateAvailableAction.EnableNotifications:
+                    setUpdateChecksEnabled(true);
+                    ScheduleInitialUpdateCheck();
+                    break;
+            }
         }
 
         private void setStartURL(Uri url)

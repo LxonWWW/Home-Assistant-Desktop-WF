@@ -94,5 +94,41 @@ namespace Home_Assistant_Desktop.Properties {
                 this["savedTrayInteractionMode"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string savedNextUpdateCheckAt {
+            get {
+                return ((string)(this["savedNextUpdateCheckAt"]));
+            }
+            set {
+                this["savedNextUpdateCheckAt"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string savedLastNotifiedUpdateVersion {
+            get {
+                return ((string)(this["savedLastNotifiedUpdateVersion"]));
+            }
+            set {
+                this["savedLastNotifiedUpdateVersion"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool savedUpdateChecksEnabled {
+            get {
+                return ((bool)(this["savedUpdateChecksEnabled"]));
+            }
+            set {
+                this["savedUpdateChecksEnabled"] = value;
+            }
+        }
     }
 }

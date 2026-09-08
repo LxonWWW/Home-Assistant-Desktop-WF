@@ -47,10 +47,12 @@
             itemRememberLastPage = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
             hoverWatchTimer = new System.Windows.Forms.Timer(components);
+            updateCheckTimer = new System.Windows.Forms.Timer(components);
             itemRestartApplication = new ToolStripMenuItem();
             itemResetApplication = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             itemSaveCurrentSettings = new ToolStripMenuItem();
+            itemCheckForUpdates = new ToolStripMenuItem();
             itemAbout = new ToolStripMenuItem();
             toolStripSeparator5 = new ToolStripSeparator();
             itemQuit = new ToolStripMenuItem();
@@ -82,12 +84,13 @@
             notifyIcon1.Visible = true;
             notifyIcon1.MouseClick += notifyIcon1_MouseClick;
             notifyIcon1.MouseMove += notifyIcon1_MouseMove;
+            notifyIcon1.BalloonTipClicked += notifyIcon1_BalloonTipClicked;
             // 
             // contextMenuStrip1
             // 
             contextMenuStrip1.BackColor = Color.FromArgb(17, 17, 17);
             contextMenuStrip1.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { itemOpenInBrowser, toolStripSeparator1, itemAlignViewTopLeft, itemAlignViewTopRight, itemAlignViewBottomLeft, itemAlignViewBottomRight, toolStripSeparator4, itemSetStartURL, itemStayOnTop, itemOpenOnHover, itemOpenOnToggle, itemRememberLastPage, toolStripSeparator2, itemRestartApplication, itemResetApplication, toolStripSeparator3, itemSaveCurrentSettings, toolStripSeparator5, itemAbout, itemQuit });
+            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { itemOpenInBrowser, toolStripSeparator1, itemAlignViewTopLeft, itemAlignViewTopRight, itemAlignViewBottomLeft, itemAlignViewBottomRight, toolStripSeparator4, itemSetStartURL, itemStayOnTop, itemOpenOnHover, itemOpenOnToggle, itemRememberLastPage, toolStripSeparator2, itemRestartApplication, itemResetApplication, toolStripSeparator3, itemSaveCurrentSettings, itemCheckForUpdates, toolStripSeparator5, itemAbout, itemQuit });
             contextMenuStrip1.Name = "contextMenuStrip1";
             contextMenuStrip1.RenderMode = ToolStripRenderMode.System;
             contextMenuStrip1.Size = new Size(205, 298);
@@ -191,6 +194,10 @@
             //
             hoverWatchTimer.Tick += hoverWatchTimer_Tick;
             //
+            // updateCheckTimer
+            //
+            updateCheckTimer.Tick += updateCheckTimer_Tick;
+            //
             // itemRestartApplication
             // 
             itemRestartApplication.ForeColor = Color.WhiteSmoke;
@@ -219,6 +226,14 @@
             itemSaveCurrentSettings.Size = new Size(204, 22);
             itemSaveCurrentSettings.Text = "Save Current Settings";
             itemSaveCurrentSettings.Click += itemSaveCurrentSettings_Click;
+            //
+            // itemCheckForUpdates
+            //
+            itemCheckForUpdates.ForeColor = Color.WhiteSmoke;
+            itemCheckForUpdates.Name = "itemCheckForUpdates";
+            itemCheckForUpdates.Size = new Size(204, 22);
+            itemCheckForUpdates.Text = "Check for Updates";
+            itemCheckForUpdates.Click += itemCheckForUpdates_Click;
             //
             // itemAbout
             //
@@ -278,6 +293,7 @@
         private ToolStripMenuItem itemOpenOnToggle;
         private ToolStripMenuItem itemRememberLastPage;
         private System.Windows.Forms.Timer hoverWatchTimer;
+        private System.Windows.Forms.Timer updateCheckTimer;
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripMenuItem itemRestartApplication;
         private ToolStripMenuItem itemResetApplication;
@@ -289,6 +305,7 @@
         private ToolStripMenuItem itemAlignViewBottomRight;
         private ToolStripSeparator toolStripSeparator4;
         private ToolStripMenuItem itemSaveCurrentSettings;
+        private ToolStripMenuItem itemCheckForUpdates;
         private ToolStripMenuItem itemAbout;
         private ToolStripSeparator toolStripSeparator5;
         private ToolStripMenuItem itemSetStartURL;
