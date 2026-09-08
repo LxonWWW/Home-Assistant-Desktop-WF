@@ -15,8 +15,8 @@ namespace Home_Assistant_Desktop
         private AppViewState viewState = AppViewState.CreateDefault();
 
         private bool hoverWatchLatched = false;
-        private DateTime lastIconHoverAt = DateTime.MinValue;
-        private static readonly TimeSpan IconHoverGracePeriod = TimeSpan.FromMilliseconds(500);
+        private Point iconHoverOrigin;
+        private const int IconHoverZoneMargin = 24;
 
         // START Windows API for Window Resizing while having no borders
 
@@ -150,20 +150,19 @@ namespace Home_Assistant_Desktop
 
         private void notifyIcon1_MouseMove(object sender, MouseEventArgs e)
         {
-            lastIconHoverAt = DateTime.UtcNow;
-
             if (viewState.InteractionMode == TrayInteractionMode.OpenOnHover && !contextMenuStrip1.Visible && !this.Visible)
             {
+                iconHoverOrigin = Cursor.Position;
                 showView(true);
             }
         }
 
         private void hoverWatchTimer_Tick(object sender, EventArgs e)
         {
-            bool cursorInForm = this.Bounds.Contains(Cursor.Position);
-            bool recentlyOverIcon = DateTime.UtcNow - lastIconHoverAt < IconHoverGracePeriod;
+            int margin = (int)(IconHoverZoneMargin * (this.DeviceDpi / 96f));
+            Rectangle iconZone = new(iconHoverOrigin.X - margin, iconHoverOrigin.Y - margin, margin * 2, margin * 2);
 
-            if (!cursorInForm && !recentlyOverIcon)
+            if (!this.Bounds.Contains(Cursor.Position) && !iconZone.Contains(Cursor.Position))
             {
                 hoverWatchTimer.Enabled = false;
                 showView(false);
